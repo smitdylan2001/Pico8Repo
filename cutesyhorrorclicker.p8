@@ -18,6 +18,7 @@ function _update60()
     update_mouse()
 	click_sprite()
     update_clicker()
+    check_for_upgrade_button_clicks()
 end
 
 function _draw()
@@ -92,7 +93,7 @@ function init_clicker()
     clicktimeouttimer=clicktimeout
     clickcounter=0
     clickspersecond=0
-    clickvalue=0
+    clickvalue=1
     clicktotal=0
     clicks=0
 end
@@ -104,7 +105,7 @@ function update_clicker()
 
     if spriteclicked == true then 
         clicks += 1
-        clicktotal += 1
+        clicktotal += clickvalue
         clicktimeouttimer = clicktimeout
     else
         clicktimeouttimer -= 1
@@ -149,7 +150,7 @@ function draw_sprite_64()
 end
 
 function enlarge_sprite_on_click()
-	sspr((spriteindeces[spriteindex] % 16) * 8,(spriteindeces[spriteindex] / 16) * 8,64,64,30,30,68,68)
+	sspr((spriteindeces[spriteindex] % 16) * 8,(spriteindeces[spriteindex] / 16) * 8, 64, 64, 30, 30, 66, 66)
 end
 -->8
 function draw_upgrade_buttons()
@@ -160,6 +161,22 @@ function draw_upgrade_buttons()
     spr(3,24,110,2,2)
     spr(5,56,110,2,2)
     spr(7,88,110,2,2)
+end
+
+function check_for_upgrade_button_clicks()
+    if msx >= 24 and msx <= 40 and msy >= 110 and msy <= 126 and nmck and clicktotal >= 100 then
+        clickvalue = 2
+        clicktotal -= 100
+        spriteindex = 2
+    end
+    if msx >= 56 and msx <= 72 and msy >= 110 and msy <= 126 and nmck and clicktotal >= 500 then
+        clickvalue = 4
+        clicktotal -= 500
+    end
+    if msx >= 88 and msx <= 30 and msy >= 110 and msy <= 126 and nmck and clicktotal >= 2500 then
+        clickvalue = 8
+        clicktotal -= 2500
+    end
 end
 __gfx__
 00000000550000005500000077777777777777777777777777777777777777777777777700000000000000000000000000000000000000000000000000000000
@@ -290,3 +307,5 @@ __gfx__
 0000000488888888406777fffffd048884888882110000000000000000000000000000000010010000010d77777777fffff02eee1d12eeeeeeeeeeeeeeeeeeee
 000000528888888840f77ffffff0488888888841000000000000000000000000000000000000010000000d77777777ffff602ee5112eeedeeeeeeeeeeeeeeeee
 00000000000000000000000000000000000000000000000000000000000000000000000000000100000005d7ffffffffff602ee1114eddddddeeeeeeeeeeeeee
+__sfx__
+0401000023010200101d0101a010160100e010080100301000000000001c0001c0001c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
