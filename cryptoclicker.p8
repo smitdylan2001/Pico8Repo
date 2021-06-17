@@ -35,9 +35,9 @@ end
 -->8
 function init_crypto()
 	cryptotype={"bitcoin","ethereum","tehter","binance","dogecoin","shiba inu"}
-	cryptovalues={32,16,8,4,2,1}
+	cryptovalues={1,0.1,0.01,0.001,0.0001,0.00001}
 	cryptoindex=6
-	money=0
+	money=0.00000
 	moneymultiples=0
 end
 
