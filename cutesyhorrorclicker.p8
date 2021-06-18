@@ -9,30 +9,38 @@ black,dark_blue,dark_purple,dark_green,brown,dark_gray,light_gray,white,red,oran
 -- by jaydee alkema and dylan smit
 
 function _init()
-    gameover = false
+    screenmodes = enum({"main", "jumpscare", "game over"})
+    screen = screenmodes.main
 
     init_mouse()
     init_clicker()
 	init_sprite()
     init_upgrades()
+    init_jumpscare()
 end
 
 function _update60()
     update_mouse()
-	click_sprite()
-    update_clicker()
-    check_for_upgrade_button_clicks()
+    if screen == screenmodes.main then
+	    click_sprite()
+        update_clicker()
+        check_for_upgrade_button_clicks()
+    end
 end
 
 function _draw()
     cls(black)
 
-	draw_sprite_64()
-    draw_upgrade_buttons()
-
-	-- these have to always be drawn last!
+    if screen == screenmodes.main then
+        draw_clicker()
+        draw_character()
+        draw_upgrade_buttons()
+    elseif screen == screenmodes.jumpscare then
+        draw_jumpscare()
+    end
+    
+    countdown_jumpscare()
     draw_cursor()
-    draw_clicker()
 end
 
 function hcenter(s)
@@ -69,6 +77,35 @@ function tostring(any)
         return ""..any
     end
     return "unkown" -- should never show
+end
+
+function enum(names, offset)
+	offset=offset or 1
+	local objects = {}
+	local size=0
+	for idr,name in pairs(names) do
+		local id = idr + offset - 1
+		local obj = {
+			id=id,       -- id
+			idr=idr,     -- 1-based relative id, without offset being added
+			name=name    -- name of the object
+		}
+		objects[name] = obj
+		objects[id] = obj
+		size=size+1
+	end
+	objects.idstart = offset        -- start of the id range being used
+	objects.idend = offset+size-1   -- end of the id range being used
+	objects.size=size
+	objects.all = function()
+		local list = {}
+		for _,name in pairs(names) do
+			add(list,objects[name])
+		end
+		local i=0
+		return function() i=i+1 if i<=#list then return list[i] end end
+	end
+	return objects
 end
 -->8
 function init_mouse()
@@ -144,7 +181,7 @@ function click_sprite()
 	end
 end
 
-function draw_sprite_64()
+function draw_character()
 	if	spriteclicked == false then 
 		spr(spriteindeces[spriteindex],32,32,8,8)
 	else
@@ -177,6 +214,7 @@ function check_for_upgrade_button_clicks()
         clickvalue = 2
         clicktotal -= 100
         spriteindex = 2
+        jumpscareindex = 2
         currentupgrade = 1
     end
     if msx >= 40 and msx <= 56 and msy >= 110 and msy <= 126 and nmck and clicktotal >= 500 and currentupgrade == 1 then
@@ -189,13 +227,45 @@ function check_for_upgrade_button_clicks()
         clicktotal -= 1250
         currentupgrade = 3
     end
-    if msx >= 88 and msx <= 102 and msy >= 110 and msy <= 126 and nmck and clicktotal >= 2500 and currentupgrade ==30 then
+    if msx >= 88 and msx <= 102 and msy >= 110 and msy <= 126 and nmck and clicktotal >= 2500 and currentupgrade == 3 then
         gameover = true
     end
 end
 -->8
 function init_jumpscare()
+    minimumtimetojumpscare=30*60 --60 fps, so we multiply by 60. this results in a 30 seconds timer
+    maximumtimetojumpscare=60*60
+    timetojumpscaretimer=minimumtimetojumpscare
+    jumpscaretime=1*60
+    jumpscaretimer=jumpscaretime
+    jumpscareindeces={64,68}
+    jumpscareindex=1
+end
 
+function draw_jumpscare()
+    spr(spriteindeces[spriteindex],32,32,8,8)
+    spr(jumpscareindeces[jumpscareindex],32,40,4,4)
+end
+
+function countdown_jumpscare()
+    if screen == screenmodes.main then
+        timetojumpscaretimer -= 1
+        print(timetojumpscaretimer,0,0)
+
+        if timetojumpscaretimer <= 0 then 
+            timetojumpscaretimer=flr(rnd(minimumtimetojumpscare) + minimumtimetojumpscare)
+            sfx(2)
+            screen = screenmodes.jumpscare
+        end
+    elseif screen == screenmodes.jumpscare then
+        jumpscaretimer -= 1
+        print(jumpscaretimer,0,0)
+
+        if jumpscaretimer <= 0 then
+            screen = screenmodes.main
+            jumpscaretimer = jumpscaretime
+        end
+    end
 end
 __gfx__
 00000000550000005500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -329,5 +399,5 @@ __gfx__
 __sfx__
 0401000023010200101d0101a010160100e010080100301000000000001c0001c0001c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000003967030360275602a56034360033603055033660355600536038660326603c560345603166022660043603d5603b66033660396703767033670306600003033650316500000032650326500000000000
-241000003e4703d670006703967032670236700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+241000003e4203d620006203962032620236200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0010000000000003200410000000220100000000000331000000013000000000000000000124200000000000000000b10000000000000030000000000000000030700000000f1100000000000000000000022320
