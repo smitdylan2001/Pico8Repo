@@ -9,8 +9,9 @@ black,dark_blue,dark_purple,dark_green,brown,dark_gray,light_gray,white,red,oran
 -- by jaydee alkema and dylan smit
 
 function _init()
-    screenmodes = enum({"main", "jumpscare", "game over"})
+    screenmodes = enum({"main", "jumpscare", "gameover"})
     screen = screenmodes.main
+    completiontimer=0
 
     init_mouse()
     init_clicker()
@@ -22,10 +23,12 @@ end
 function _update60()
     update_mouse()
     if screen == screenmodes.main then
+        completiontimer += 1
 	    click_sprite()
         update_clicker()
         check_for_upgrade_button_clicks()
     end
+    --get_cheats_input()
 end
 
 function _draw()
@@ -37,6 +40,8 @@ function _draw()
         draw_upgrade_buttons()
     elseif screen == screenmodes.jumpscare then
         draw_jumpscare()
+    elseif screen == screenmodes.gameover then
+        draw_game_over_screen()
     end
     
     countdown_jumpscare()
@@ -147,6 +152,7 @@ function update_clicker()
         clicks += 1
         clicktotal += clickvalue
         clicktimeouttimer = clicktimeout
+        sfx(0)
     else
         clicktimeouttimer -= 1
     end
@@ -199,36 +205,46 @@ end
 
 function draw_upgrade_buttons()
     print("upgrades", hcenter("upgrades"), 96)
-    print("100", 18, 104)
-    print("500", 42, 104)
-    print("1250", 64, 104)
+    if currentupgrade < 1 then 
+        print("100", 18, 104)
+        spr(32,16,110,2,2)
+    end
+    if currentupgrade < 2 then
+        print("500", 42, 104)
+        spr(34,40,110,2,2)
+    end
+    if currentupgrade < 3 then
+        print("1250", 64, 104)
+        spr(36,64,110,2,2)
+    end
     print("2500", 88, 104)
-    spr(32,16,110,2,2)
-    spr(34,40,110,2,2)
-    spr(36,64,110,2,2)
     spr(38,88,110,2,2)
 end
 
 function check_for_upgrade_button_clicks()
     if msx >= 16 and msx <= 32 and msy >= 110 and msy <= 126 and nmck and clicktotal >= 100 and currentupgrade == 0 then
+        sfx(4)
         clickvalue = 2
         clicktotal -= 100
-        spriteindex = 2
-        jumpscareindex = 2
         currentupgrade = 1
     end
     if msx >= 40 and msx <= 56 and msy >= 110 and msy <= 126 and nmck and clicktotal >= 500 and currentupgrade == 1 then
+        sfx(4)
         clickvalue = 4
         clicktotal -= 500
         currentupgrade = 2
+        spriteindex = 2
+        jumpscareindex = 2
     end
     if msx >= 64 and msx <= 80 and msy >= 110 and msy <= 126 and nmck and clicktotal >= 1250 and currentupgrade == 2 then
+        sfx(4)
         clickvalue = 8
         clicktotal -= 1250
         currentupgrade = 3
     end
     if msx >= 88 and msx <= 102 and msy >= 110 and msy <= 126 and nmck and clicktotal >= 2500 and currentupgrade == 3 then
-        gameover = true
+        sfx(4)
+        screen = screenmodes.gameover
     end
 end
 -->8
@@ -250,7 +266,7 @@ end
 function countdown_jumpscare()
     if screen == screenmodes.main then
         timetojumpscaretimer -= 1
-        print(timetojumpscaretimer,0,0)
+        --print(timetojumpscaretimer,0,0)
 
         if timetojumpscaretimer <= 0 then 
             timetojumpscaretimer=flr(rnd(minimumtimetojumpscare) + minimumtimetojumpscare)
@@ -259,13 +275,22 @@ function countdown_jumpscare()
         end
     elseif screen == screenmodes.jumpscare then
         jumpscaretimer -= 1
-        print(jumpscaretimer,0,0)
+       --print(jumpscaretimer,0,0)
 
         if jumpscaretimer <= 0 then
             screen = screenmodes.main
             jumpscaretimer = jumpscaretime
         end
     end
+end
+-->8
+function draw_game_over_screen()
+    print("you win!", hcenter("you win!"), 60, 8)
+    print("completion time: "..flr(completiontimer/60).." seconds!", hcenter("completion time: "..flr(completiontimer/60).." seconds!"), 68, 8)
+end
+
+function get_cheats_input()
+    if btn(left) then clicktotal += 100 end
 end
 __gfx__
 00000000550000005500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -398,6 +423,7 @@ __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000100000005d7ffffffffff602ee1114eddddddeeeeeeeeeeeeee
 __sfx__
 0401000023010200101d0101a010160100e010080100301000000000001c0001c0001c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-001000003967030360275602a56034360033603055033660355600536038660326603c560345603166022660043603d5603b66033660396703767033670306600003033650316500000032650326500000000000
-241000003e4203d620006203962032620236200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000003961030310275102a51034310033103051033610355100531038610326103c510345103161022610043103d5103b61033610396103761033610306100001033610316100001032610326100001000000
+241000003e4403d640006403964032640236400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0010000000000003200410000000220100000000000331000000013000000000000000000124200000000000000000b10000000000000030000000000000000030700000000f1100000000000000000000022320
+080300001402021020280202902024020200201502006020020000400004000070001a00031000300002900022000190001000005000000000000000000000000000000000000000000000000000000000000000
